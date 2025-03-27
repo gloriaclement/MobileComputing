@@ -166,7 +166,7 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Quantity TextField
-            OutlinedTextField(
+            TextField(
                 value = quantity,
                 onValueChange = { quantity = it },
                 label = { Text("Quantity") },
