@@ -1,9 +1,10 @@
 package com.gclem19.smartpantry.data
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SmartPantryDao {
@@ -21,33 +22,34 @@ interface SmartPantryDao {
     //2. For IO-bound operations (network, database, file).
 
     //3. To declare functions that can be paused and resumed.
+    // Get all items from the shopping_list table
+    @Query("SELECT * FROM shopping_list")
+    fun getAllItems(): Flow<List<ShoppingList>>
 
-    @Insert
-    suspend fun insert(user: User)
+    // Insert a shopping list item, replace if already exists
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItem(item: ShoppingList)
 
-    @Query("SELECT * FROM user_table WHERE id = :id")
-    suspend fun getUserById(id: Int): User?
+//    // Insert a user
+//    @Insert
+//    suspend fun insert(user: User)
+//
+//    // Get a user by ID
+//    @Query("SELECT * FROM user_table WHERE id = :id")
+//    suspend fun getUserById(id: Int): User?
+//
+//    // Delete all users
+//    @Query("DELETE FROM user_table")
+//    suspend fun deleteAllUsers()
+//
+//    // Get all users ordered by level, score, duration, and username
+//    @Query("SELECT * FROM user_table ORDER BY level ASC, score DESC, duration ASC, username ASC")
+//    fun getAllUsers(): List<User>
+//
+//    // Get all users live data
+//    @Query("SELECT * FROM user_table ORDER BY level ASC, score DESC, duration ASC, username ASC")
+//    fun getAllUsersLiveData(): LiveData<List<User>>
 
-    @Query("DELETE FROM user_table")
-    suspend fun deleteAllUsers()
-
-    @Query("SELECT * FROM user_table ORDER BY "
-
-            + "level ASC, "
-            + "score DESC, "
-            + "duration ASC, "
-            + "username ASC")
-
-    fun getAllUsers(): List<User>
-
-    @Query("SELECT * FROM user_table ORDER BY "
-
-            + "level ASC, "
-            + "score DESC, "
-            + "duration ASC, "
-            + "username ASC")
-
-    fun getAllUsersLiveData(): LiveData<List<User>>
 }
 
-//Press Shift + Tab to navigate to chat history.
+
