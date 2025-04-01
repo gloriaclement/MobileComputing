@@ -5,7 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.gclem19.smartpantry.data.SmartPantryDB
 import com.gclem19.smartpantry.data.SmartPantryDao
-import com.gclem19.smartpantry.data.User
+//import com.gclem19.smartpantry.data.User
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals

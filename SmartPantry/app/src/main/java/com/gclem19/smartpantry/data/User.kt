@@ -21,16 +21,15 @@ data class ShoppingList(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val category: String,
-    val quantity: String
+    val quantity: String,
 )
 
-//@Entity(tableName = "pantry_list")
-//data class PantryList(
-//    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-//    val name: String,
-//    val category: String,
-//    val quantity: String,
-//    val expiry: String
-//)
+@Entity(tableName = "pantry_list")
+data class PantryList(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,  // Fix: Set default id = 0 instead of 1
+    val name: String,
+    val category: String,
+    val quantity: String,
+    val expiryDate: String // Ensure this line exists
+)
 
-{}

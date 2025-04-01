@@ -3,6 +3,7 @@ package com.gclem19.smartpantry.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.gclem19.smartpantry.data.PantryList
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.data.SmartPantryDB
 import com.gclem19.smartpantry.data.SmartPantryDao
@@ -18,6 +19,9 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     private val _shoppingList = MutableStateFlow<List<ShoppingList>>(emptyList())
     val shoppingList = _shoppingList.asStateFlow()
 
+    private val _pantryList = MutableStateFlow<List<ShoppingList>>(emptyList())
+    val pantryList = _pantryList.asStateFlow()
+
     //retrive all users
 
     //val allUsers: List<User> = smartPantryDao.getAllUsers()
@@ -27,8 +31,16 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         viewModelScope.launch {
             smartPantryDao.getAllItems().collectLatest { _shoppingList.value = it }
         }
+        viewModelScope.launch {
+            smartPantryDao.getAllItems().collectLatest { _pantryList.value = it }
+        }
     }
-    fun addItem(item: ShoppingList) {
+    fun addItemShoppingList(item: ShoppingList) {
+        viewModelScope.launch {
+            smartPantryDao.insertItem(item)
+        }
+    }
+    fun addItemPantryList(item: PantryList) {
         viewModelScope.launch {
             smartPantryDao.insertItem(item)
         }

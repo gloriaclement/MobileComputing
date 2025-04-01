@@ -44,6 +44,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gclem19.smartpantry.R
+import com.gclem19.smartpantry.data.PantryList
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.ui.theme.SmartPantryTheme
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
@@ -70,7 +71,7 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Smart Pantry Home") }) }
+        topBar = {TopAppBar(title = { Text("Smart Pantry Home") }) }
     ) { padding -> // Padding from Scaffold
         Box(
             modifier = modifier
@@ -106,7 +107,8 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantryList(navController: NavController, modifier: Modifier = Modifier) {
+fun PantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    val pantryList by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
     Scaffold(
         topBar = { TopAppBar(title = { Text("Pantry List") }) }
     ) { padding ->
@@ -120,8 +122,11 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier) {
             LazyColumn(
                 modifier = Modifier.weight(1f) // Takes available space, pushing the button down
             ) {
-                items(10) { index ->
-                    Text("Pantry Item $index", modifier = Modifier.padding(8.dp))
+
+                items(pantryList) { item ->
+                    Text(
+                        text = "${item.name} ${item.category} ${item.quantity}",
+                        modifier = Modifier.padding(8.dp))
                 }
             }
 
@@ -138,135 +143,13 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier) {
     }
 }
 
-
 @Composable
-fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
-    val shoppingList by smartPantryViewModel.shoppingList.collectAsState(initial = emptyList())
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Shopping List") }) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
-            // Display list items
-            LazyColumn(
-                modifier = Modifier.weight(1f) // Takes available space, pushing the button down
-            ) {
-                items(shoppingList) { item ->
-                    Text(
-                        text = "${item.name} - ${item.quantity} ${item.category}",
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Add button at the bottom
-            Button(
-                onClick = { navController.navigate("add to shopping list") },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Add")
-            }
-        }
-    }
-}
-
-
-
-    @Composable
-    fun AddShoppingList(
-        navController: NavController,
-        modifier: Modifier = Modifier,
-        smartPantryViewModel: SmartPantryViewModel = viewModel()
-    ) {
-
-        val context = LocalContext.current
-        var itemName by remember { mutableStateOf("") }
-        var quantity by remember { mutableStateOf("") }
-        var category by remember { mutableStateOf("") }
-
-
-        Scaffold(
-            topBar = { TopAppBar(title = { Text("Add to Shopping list") }) }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Item Name TextField
-                TextField(
-                    value = itemName,
-                    onValueChange = { itemName = it },
-                    label = { Text("Item Name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Category TextField
-                TextField(
-                    value = category,
-                    onValueChange = { category = it },
-                    label = { Text("Category") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Quantity TextField
-                TextField(
-                    value = quantity,
-                    onValueChange = { quantity = it },
-                    label = { Text("Quantity") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Save Button
-                Button(
-                    onClick = {
-                        val item =
-                            ShoppingList(name = itemName, category = category, quantity = quantity)
-                        smartPantryViewModel.addItem(item)
-                        val merengueSong = MediaPlayer.create(context, R.raw.merengue)
-                        merengueSong.start()
-                        Toast.makeText(
-                            navController.context,
-                            "Added: $itemName ($quantity) ($category)",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.popBackStack() // Navigate back
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Save to Shopping list")
-                }
-            }
-        }
-    }
-
-
-@Composable
-fun AddPantryList(navController: NavController, modifier: Modifier = Modifier) {
+fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val context = LocalContext.current
     var itemName by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
-    var expiry by remember { mutableStateOf("") }
+    var expiryDate by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Add to Pantry") }) }
@@ -315,8 +198,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier) {
 
             // Item Name TextField
             TextField(
-                value = expiry,
-                onValueChange = { expiry = it },
+                value = expiryDate,
+                onValueChange = { expiryDate = it },
                 label = { Text("Expiry Date") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -327,9 +210,13 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier) {
             // Save Button
             Button(
                 onClick = {
+                    val item =
+                        PantryList(name = itemName, category = category, quantity = quantity, expiryDate = expiryDate)
+                    smartPantryViewModel.addItemPantryList(item)
                     val marimbaSong = MediaPlayer.create(context, R.raw.marimba)
                     marimbaSong.start()
-                    Toast.makeText(navController.context, "Added: $itemName ($quantity) ($category) ($expiry)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(navController.context,
+                        "Added: $itemName ($quantity) ($category) ($expiryDate)", Toast.LENGTH_SHORT).show()
                     navController.popBackStack() // Navigate back
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -340,6 +227,121 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier) {
     }
 }
 
+
+@Composable
+fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    val shoppingList by smartPantryViewModel.shoppingList.collectAsState(initial = emptyList())
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Shopping List") }) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            // Display list items
+            LazyColumn(
+                modifier = Modifier.weight(1f) // Takes available space, pushing the button down
+            ) {
+                items(shoppingList) { item ->
+                    Text(
+                        text = "${item.name} - ${item.quantity} ${item.category}",
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Add button at the bottom
+            Button(
+                onClick = { navController.navigate("add to shopping list") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add")
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    val context = LocalContext.current
+    var itemName by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("") }
+
+
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Add to Shopping list") }) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Item Name TextField
+            TextField(
+                value = itemName,
+                onValueChange = { itemName = it },
+                label = { Text("Item Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Category TextField
+            TextField(
+                value = category,
+                onValueChange = { category = it },
+                label = { Text("Category") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Quantity TextField
+            TextField(
+                value = quantity,
+                onValueChange = { quantity = it },
+                label = { Text("Quantity") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Save Button
+            Button(
+                onClick = {
+                    val item =
+                        ShoppingList(name = itemName, category = category, quantity = quantity)
+                    smartPantryViewModel.addItemShoppingList(item)
+                    val merengueSong = MediaPlayer.create(context, R.raw.merengue)
+                    merengueSong.start()
+                    Toast.makeText(
+                        navController.context,
+                        "Added: $itemName ($quantity) ($category)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.popBackStack() // Navigate back
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save to Shopping list")
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
