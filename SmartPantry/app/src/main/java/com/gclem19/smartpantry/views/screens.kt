@@ -2,11 +2,6 @@
 
 package com.gclem19.smartpantry.views
 
-//import androidx.compose.foundation.magnifier
-//import androidx.compose.foundation.layout.size
-//import androidx.compose.ui.res.painterResource
-//import androidx.compose.foundation.Image
-//import androidx.compose.foundation.clickable
 import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +39,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gclem19.smartpantry.R
-import com.gclem19.smartpantry.data.PantryList
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.ui.theme.SmartPantryTheme
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
@@ -65,7 +59,7 @@ fun AppNavigation() {
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -104,7 +98,6 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
@@ -125,7 +118,7 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
 
                 items(pantryList) { item ->
                     Text(
-                        text = "${item.name} ${item.category} ${item.quantity}",
+                        text = "${item.name} ${item.category} ${item.quantity} ${item.date}",
                         modifier = Modifier.padding(8.dp))
                 }
             }
@@ -134,7 +127,7 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
 
             // Add button at the bottom
             Button(
-                onClick = { navController.navigate("add to pantry list") },
+                onClick = { navController.navigate("Add to pantry list") },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Add")
@@ -143,16 +136,17 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val context = LocalContext.current
     var itemName by remember { mutableStateOf("") }
     var quantity by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
-    var expiryDate by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Add to Pantry") }) }
+        topBar = { TopAppBar(title = { Text("Add to Pantry List") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -198,8 +192,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 
             // Item Name TextField
             TextField(
-                value = expiryDate,
-                onValueChange = { expiryDate = it },
+                value = date,
+                onValueChange = { date = it },
                 label = { Text("Expiry Date") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -211,12 +205,17 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
             Button(
                 onClick = {
                     val item =
-                        PantryList(name = itemName, category = category, quantity = quantity, expiryDate = expiryDate)
+                        com.gclem19.smartpantry.data.PantryList(
+                            name = itemName,
+                            category = category,
+                            quantity = quantity,
+                            date = date
+                        )
                     smartPantryViewModel.addItemPantryList(item)
                     val marimbaSong = MediaPlayer.create(context, R.raw.marimba)
                     marimbaSong.start()
                     Toast.makeText(navController.context,
-                        "Added: $itemName ($quantity) ($category) ($expiryDate)", Toast.LENGTH_SHORT).show()
+                        "Added: $itemName ($quantity) ($category) ($date)", Toast.LENGTH_SHORT).show()
                     navController.popBackStack() // Navigate back
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -228,6 +227,7 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val shoppingList by smartPantryViewModel.shoppingList.collectAsState(initial = emptyList())
@@ -256,7 +256,7 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
 
             // Add button at the bottom
             Button(
-                onClick = { navController.navigate("add to shopping list") },
+                onClick = { navController.navigate("Add to shopping list") },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Add")
@@ -266,7 +266,7 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
 }
 
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val context = LocalContext.current

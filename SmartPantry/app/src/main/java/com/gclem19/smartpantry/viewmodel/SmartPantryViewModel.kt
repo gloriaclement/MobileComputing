@@ -13,36 +13,37 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class SmartPantryViewModel(application: Application): AndroidViewModel(application) {
-    private val smartPantryDao:SmartPantryDao =
+    private val smartPantryDao: SmartPantryDao =
         SmartPantryDB.getDatabase(application).smartPantryDao()
 
     private val _shoppingList = MutableStateFlow<List<ShoppingList>>(emptyList())
     val shoppingList = _shoppingList.asStateFlow()
 
-    private val _pantryList = MutableStateFlow<List<ShoppingList>>(emptyList())
+    private val _pantryList = MutableStateFlow<List<PantryList>>(emptyList())
     val pantryList = _pantryList.asStateFlow()
 
     //retrive all users
-
     //val allUsers: List<User> = smartPantryDao.getAllUsers()
-
     //variables from user input should be defined here
+
     init {
         viewModelScope.launch {
-            smartPantryDao.getAllItems().collectLatest { _shoppingList.value = it }
+            smartPantryDao.getAllShoppingItems().collectLatest { _shoppingList.value = it }
         }
         viewModelScope.launch {
-            smartPantryDao.getAllItems().collectLatest { _pantryList.value = it }
+            smartPantryDao.getAllPantryItems().collectLatest { _pantryList.value = it }
         }
     }
+
     fun addItemShoppingList(item: ShoppingList) {
         viewModelScope.launch {
-            smartPantryDao.insertItem(item)
+            smartPantryDao.insertShoppingItem(item)
         }
     }
+
     fun addItemPantryList(item: PantryList) {
         viewModelScope.launch {
-            smartPantryDao.insertItem(item)
+            smartPantryDao.insertPantryItem(item)
         }
     }
 }

@@ -10,7 +10,7 @@ import com.gclem19.smartpantry.views.AppNavigation
 
 class MainActivity : ComponentActivity() {
 
-    private val SmartPantryViewModel: SmartPantryViewModel by viewModels()
+    private val smartPantryViewModel: SmartPantryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

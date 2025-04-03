@@ -16,18 +16,21 @@ interface SmartPantryDao {
     //2. For IO-bound operations (network, database, file).
     //3. To declare functions that can be paused and resumed.
     // Get all items from the shopping_list table
-    @Query("SELECT * FROM shopping_list")
-    fun getAllItems(): Flow<List<ShoppingList>>
 
-    // Insert a shopping list item, replace if already exists
+
+// Insert a shopping list item, replace if already exists
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItem(item: ShoppingList)
+    suspend fun insertShoppingItem(shoppingList: ShoppingList)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPantryItem(shoppingList: PantryList)
+
+    @Query("SELECT * FROM shopping_list")
+    fun getAllShoppingItems(): Flow<List<ShoppingList>>
 
     @Query("SELECT * FROM pantry_list ORDER BY id DESC")
     fun getAllPantryItems(): Flow<List<PantryList>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItem(item: PantryList)
+
 
 //    // Insert a user
 //    @Insert

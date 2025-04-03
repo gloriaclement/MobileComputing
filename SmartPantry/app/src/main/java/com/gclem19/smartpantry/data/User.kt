@@ -5,6 +5,24 @@ import androidx.room.PrimaryKey
 
 // Create a data class representing a table in the database.
 
+
+@Entity(tableName = "shopping_list")
+data class ShoppingList(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val category: String,
+    val quantity: String,
+)
+
+@Entity(tableName = "pantry_list")
+data class PantryList(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val category: String,
+    val quantity: String,
+    val date: String
+)
+
 //@Entity(tableName = "user_table") // modify "user_table" to the table name for your database
 //data class User(
 //    @PrimaryKey(autoGenerate = true)
@@ -16,20 +34,3 @@ import androidx.room.PrimaryKey
 //    @ColumnInfo(defaultValue = "CURRENT_TIMESTAMP") val date: Long = System.currentTimeMillis()
 //
 //)
-@Entity(tableName = "shopping_list")
-data class ShoppingList(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val category: String,
-    val quantity: String,
-)
-
-@Entity(tableName = "pantry_list")
-data class PantryList(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,  // Fix: Set default id = 0 instead of 1
-    val name: String,
-    val category: String,
-    val quantity: String,
-    val expiryDate: String // Ensure this line exists
-)
-
