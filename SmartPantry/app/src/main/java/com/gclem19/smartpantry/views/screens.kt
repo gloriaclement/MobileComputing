@@ -39,6 +39,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gclem19.smartpantry.R
+import com.gclem19.smartpantry.data.PantryList
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.ui.theme.SmartPantryTheme
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
@@ -205,7 +206,7 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
             Button(
                 onClick = {
                     val item =
-                        com.gclem19.smartpantry.data.PantryList(
+                        PantryList(
                             name = itemName,
                             category = category,
                             quantity = quantity,
