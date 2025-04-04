@@ -1,10 +1,14 @@
 package com.gclem19.smartpantry
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
 import com.gclem19.smartpantry.views.AppNavigation
 
@@ -26,7 +30,22 @@ class MainActivity : ComponentActivity() {
 //
 @Composable
 fun SmartPantryApp() {
-    AppNavigation()
+    // Define the dark color scheme
+    val darkColorScheme = darkColorScheme(
+        primary = Color(0xFF5C4033), // Dark Brown
+        secondary = Color(0xFF808000), // Olive Green
+        tertiary = Color(0xFFD2B48C), // Light Brown
+        background = Color(0xFF808000), // Olive Green as background
+        surface = Color(0xFF808000) // Olive Green for surfaces too
+    )
+
+    // Apply the color scheme to MaterialTheme
+    MaterialTheme(
+        colorScheme = darkColorScheme
+    ) {
+        // Call AppNavigation inside the MaterialTheme to apply the theme to all screens
+        AppNavigation()
+    }
 }
 
 //@Composable
