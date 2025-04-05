@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 //Room Database: Create the database instance.
 
-@Database(entities = [ShoppingList::class, PantryList::class], version = 2, exportSchema = false) //,
+@Database(entities = [ShoppingList::class, PantryItem::class], version = 2, exportSchema = false) //,
 abstract class SmartPantryDB : RoomDatabase() {
     abstract fun smartPantryDao(): SmartPantryDao
     //a companion object is similar to Java static declarations.

@@ -22,13 +22,13 @@ interface SmartPantryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertShoppingItem(shoppingList: ShoppingList)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPantryItem(pantryList: PantryList)
+    suspend fun insertPantryItem(pantryList: PantryItem)
 
     @Query("SELECT * FROM shopping_list")
     fun getAllShoppingItems(): Flow<List<ShoppingList>>
 
     @Query("SELECT * FROM pantry_list ORDER BY id DESC")
-    fun getAllPantryItems(): Flow<List<PantryList>>
+    fun getAllPantryItems(): Flow<List<PantryItem>>
 
 
 

@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//
 @Composable
 fun SmartPantryApp() {
     // Define the dark color scheme
@@ -35,7 +34,7 @@ fun SmartPantryApp() {
         primary = Color(0xFF5C4033), // Dark Brown
         secondary = Color(0xFF808000), // Olive Green
         tertiary = Color(0xFFD2B48C), // Light Brown
-        background = Color(0xFF808000), // Olive Green as background
+        background = Color(0xFFC8D472), // Olive Green as background
         surface = Color(0xFF808000) // Olive Green for surfaces too
     )
 

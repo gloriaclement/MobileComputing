@@ -15,7 +15,7 @@ data class ShoppingList(
 )
 
 @Entity(tableName = "pantry_list")
-data class PantryList(
+data class PantryItem(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val category: String,
