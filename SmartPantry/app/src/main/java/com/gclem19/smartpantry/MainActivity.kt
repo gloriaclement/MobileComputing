@@ -1,6 +1,9 @@
 package com.gclem19.smartpantry
 
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,11 +16,17 @@ import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
 import com.gclem19.smartpantry.views.AppNavigation
 
 class MainActivity : ComponentActivity() {
-
     private val smartPantryViewModel: SmartPantryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Create the notification channel when the app starts
+        createNotificationChannel()
+
+        // Trigger the expiry check and notifications
+        smartPantryViewModel.checkAndNotifyExpiringItems(applicationContext)
+
         setContent {
             SmartPantryApp() // This should be your main composable function
             //code for tasks here
@@ -25,7 +34,30 @@ class MainActivity : ComponentActivity() {
             //viewModel.insert(User(username ="Sarah", score = 80, duration = 70))
         }
     }
+
+    // Create notification channel (required for Android 8.0 and above)
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelId = "expiring_food_channel"
+            val channelName = "Expiring Food Notifications"
+            val channelDescription = "Notifications for food items that are expiring soon."
+            val importance = NotificationManager.IMPORTANCE_HIGH
+
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                importance
+            ).apply {
+                description = channelDescription
+            }
+
+            // Register the channel with the system
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
 }
+
 
 @Composable
 fun SmartPantryApp() {
