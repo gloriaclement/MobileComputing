@@ -89,6 +89,8 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val expiringItems = smartPantryViewModel.getExpiringItems()
+    val recipesForExpiringItems by smartPantryViewModel.recipesForExpiringItems.collectAsState()
+    val recipeMap by smartPantryViewModel.recipesForExpiringItems.collectAsState()
 
     // Trigger notification for expiring items when HomeScreen is launched
     LaunchedEffect(Unit) {
@@ -128,12 +130,58 @@ fun HomeScreen(
             ) {
                 // Expiry Notification Section
                 if (expiringItems.isNotEmpty()) {
-                    Text("Expiring Soon:", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Expiring Soon:",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
                     expiringItems.forEach { item ->
-                        Text("${item.name} - ${item.date}")
+                        Column(horizontalAlignment = Alignment.Start) {
+                            Text(
+                                text = "${item.name} - ${item.date}",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+
+                            val recipes = recipeMap[item.name]
+                            if (!recipes.isNullOrEmpty()) {
+                                Text(
+                                    text = "Suggested Recipes:",
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF006400),
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                                recipes.take(5).forEach { recipe ->
+                                    Text(
+                                        text = "- $recipe",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.DarkGray,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "Fetching recipes...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
                     }
                 } else {
-                    Text("No items expiring soon.")
+                    Text(
+                        text = "No items expiring soon.",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
                 }
 
                 // Pantry List Image Button
@@ -171,6 +219,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 
 

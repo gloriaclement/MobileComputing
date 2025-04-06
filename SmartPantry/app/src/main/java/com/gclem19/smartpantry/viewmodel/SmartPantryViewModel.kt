@@ -35,6 +35,9 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     private val _pantryList = MutableStateFlow<List<PantryItem>>(emptyList())
     val pantryList = _pantryList.asStateFlow()
 
+    private val _recipesForExpiringItems = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val recipesForExpiringItems = _recipesForExpiringItems.asStateFlow()
+
     // Initialize the pantry items
     init {
         viewModelScope.launch {
@@ -98,6 +101,18 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         }
     }
 
+    // Function to fetch recipe suggestions for each expiring item
+    fun fetchRecipeSuggestionsForExpiringItems(expiringItems: List<PantryItem>) {
+        expiringItems.forEach { item ->
+            getRecipesForIngredient(item.name) { recipes ->
+                val currentMap = _recipesForExpiringItems.value.toMutableMap()
+                currentMap[item.name] = recipes
+                _recipesForExpiringItems.value = currentMap
+            }
+        }
+    }
+
+
     fun showExpiryNotification(
         context: Context,
         item: String,
@@ -114,15 +129,18 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         val notification = NotificationCompat.Builder(context, "expiry_channel")
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setContentTitle("Expiring Soon: $item")
-            .setContentText("Recipes: $recipeSuggestions")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Recipes:\n$recipeSuggestions"))
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(1, notification)
+        notificationManager.notify(item.hashCode(), notification)
+
     }
     fun checkAndNotifyExpiringItems(context: Context) {
         val expiringItems = getExpiringItems()
+
+        fetchRecipeSuggestionsForExpiringItems(expiringItems)
 
         expiringItems.forEach { item ->
             // For each expiring item, get recipe suggestions
