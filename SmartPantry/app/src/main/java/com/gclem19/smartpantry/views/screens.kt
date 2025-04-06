@@ -2,7 +2,10 @@
 
 package com.gclem19.smartpantry.views
 
+
+import android.app.DatePickerDialog
 import android.media.MediaPlayer
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -23,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -55,6 +59,9 @@ import com.gclem19.smartpantry.data.PantryItem
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.ui.theme.SmartPantryTheme
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 
 //define app navigation
@@ -148,10 +155,10 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
-    val pantryList by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
+    val pantryItem by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
 
     // Group items by category
-    val groupedItems = pantryList.groupBy { it.category }
+    val groupedItems = pantryItem.groupBy { it.category }
 
     Scaffold(
         topBar = {
@@ -226,6 +233,22 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
     var category by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
 
+    val calendar = Calendar.getInstance()
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    // DatePickerDialog setup
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, selectedYear, selectedMonth, selectedDay ->
+            val formattedDay = String.format("%02d", selectedDay)
+            val formattedMonth = String.format("%02d", selectedMonth + 1) // Month is 0-based
+            date = "$formattedDay/$formattedMonth/$selectedYear"
+        },
+        year, month, day
+    )
+
     Scaffold(
         topBar = { TopAppBar(title = { Text( text ="Add to Pantry List", color = Color(0xFFD2B48C)) }) }
     ) { padding ->
@@ -245,7 +268,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+                    focusedTextColor =  Color.Black
                 )
             )
 
@@ -259,7 +283,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+                    focusedTextColor =  Color.Black
                 )
             )
 
@@ -274,42 +299,70 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+                    focusedTextColor =  Color.Black
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Item Name TextField
-            TextField(
-                value = date,
-                onValueChange = { date = it },
-                label = { Text("Expiry Date") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+            // Expiry Date TextField
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { datePickerDialog.show() }
+            ) {
+                OutlinedTextField(
+                    value = date,
+                    onValueChange = {},
+                    label = { Text("Expiry Date") },
+                    singleLine = true,
+                    readOnly = true,
+                    enabled = false, // Prevents text field from getting focus
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        disabledTextColor = Color.Black,
+                        disabledLabelColor = Color.Gray,
+                        disabledBorderColor = Color.Gray,
+                        disabledTrailingIconColor = Color.Black,
+                        disabledLeadingIconColor = Color.Black,
+                        disabledPlaceholderColor = Color.DarkGray,
+                        containerColor = Color(0xFFF5F5DC)
+                    )
                 )
-            )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Save Button
             Button(
                 onClick = {
-                    val item =
-                        PantryItem(
+                    // Date validation
+                    if (date.isNotEmpty()) {
+                        val item = PantryItem(
                             name = itemName,
                             category = category,
                             quantity = quantity,
                             date = date
                         )
-                    smartPantryViewModel.addItemPantryList(item)
-                    val marimbaSong = MediaPlayer.create(context, R.raw.marimba)
-                    marimbaSong.start()
-                    Toast.makeText(navController.context,
-                        "Added: $itemName ($quantity) ($category) ($date)", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack() // Navigate back
+                        smartPantryViewModel.addItemPantryList(item)
+                        val marimbaSong = MediaPlayer.create(context, R.raw.marimba)
+                        marimbaSong.start()
+                        Toast.makeText(
+                            navController.context,
+                            "Added: $itemName ($quantity) ($category) ($date)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navController.popBackStack() // Navigate back
+                    } else {
+                        // Show error message if date is invalid
+                        Log.e("DateValidation", "Invalid date format: $date")
+                        Toast.makeText(
+                            navController.context,
+                            "Please enter a valid date (yyyy-MM-dd).",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -319,6 +372,18 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 )
             }
         }
+    }
+}
+
+// Function to validate date format
+
+fun isValidDate(dateString: String, dateFormat: SimpleDateFormat): Boolean {
+    return try {
+        //dateFormat.isLenient = false // Strict validation
+        dateFormat.parse(dateString) // Tries to parse the date
+        true
+    } catch (e: ParseException) {
+        false
     }
 }
 
@@ -410,7 +475,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+                    focusedTextColor =  Color.Black
                 )
             )
 
@@ -424,7 +490,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+//                    focusedTextColor =  Color.Black
                 )
             )
 
@@ -439,7 +506,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFF5F5DC)
+                    containerColor = Color(0xFFF5F5DC),
+                    focusedTextColor =  Color.Black
                 )
             )
 
