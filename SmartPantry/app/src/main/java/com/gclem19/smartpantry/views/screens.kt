@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+//import androidx.compose.material3.Card
+//import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -59,8 +61,6 @@ import com.gclem19.smartpantry.data.PantryItem
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.ui.theme.SmartPantryTheme
 import com.gclem19.smartpantry.viewmodel.SmartPantryViewModel
-import java.text.ParseException
-import java.text.SimpleDateFormat
 import java.util.Calendar
 
 
@@ -81,8 +81,14 @@ fun AppNavigation() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    smartPantryViewModel: SmartPantryViewModel = viewModel()
+) {
     val context = LocalContext.current
+    val expiringItems = smartPantryViewModel.getExpiringItems()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,16 +108,28 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                 }
             )
         }
-    ) { padding -> // Padding from Scaffold
+    ) { padding ->
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding), // Apply scaffold padding
-            contentAlignment = Alignment.Center
+                .padding(padding),
+            contentAlignment = Alignment.TopCenter
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(top = 16.dp)
             ) {
+                // Expiry Notification Section
+                if (expiringItems.isNotEmpty()) {
+                    Text("Expiring Soon:", fontWeight = FontWeight.Bold)
+                    expiringItems.forEach { item ->
+                        Text("${item.name} - ${item.date}")
+                    }
+                } else {
+                    Text("No items expiring soon.")
+                }
+
                 // Pantry List Image Button
                 Image(
                     painter = painterResource(id = R.drawable.pantry_list),
@@ -128,11 +146,9 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                         }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp)) // Adds space between buttons
-
                 // Shopping List Image Button
                 Image(
-                    painter = painterResource(id = R.drawable.shopping_list), // Replace with your image resource
+                    painter = painterResource(id = R.drawable.shopping_list),
                     contentDescription = "Shopping List",
                     modifier = Modifier
                         .size(150.dp)
@@ -145,11 +161,11 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
                             navController.navigate("shopping list")
                         }
                 )
-
             }
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -376,16 +392,15 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 }
 
 // Function to validate date format
-
-fun isValidDate(dateString: String, dateFormat: SimpleDateFormat): Boolean {
-    return try {
-        //dateFormat.isLenient = false // Strict validation
-        dateFormat.parse(dateString) // Tries to parse the date
-        true
-    } catch (e: ParseException) {
-        false
-    }
-}
+//fun isValidDate(dateString: String, dateFormat: SimpleDateFormat): Boolean {
+//    return try {
+//        //dateFormat.isLenient = false // Strict validation
+//        dateFormat.parse(dateString) // Tries to parse the date
+//        true
+//    } catch (e: ParseException) {
+//        false
+//    }
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
