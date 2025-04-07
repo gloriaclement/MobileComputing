@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -511,7 +512,18 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
                             text = "${item.name} - ${item.quantity} ${item.category}",
                             modifier = Modifier.weight(1f)
                         )
+                        IconButton(onClick = {
+                            smartPantryViewModel.addItemToPantryList(item) // Move item to pantry
+                            smartPantryViewModel.removeFromShoppingList(item) // Remove item from shopping list
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Move to pantry",
+                                tint = Color.Green
+                            )
+                        }
 
+                        //Delete button
                         IconButton(
                             onClick = {
                                 smartPantryViewModel.removeFromShoppingList(item)

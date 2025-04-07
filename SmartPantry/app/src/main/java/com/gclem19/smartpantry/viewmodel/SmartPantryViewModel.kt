@@ -114,7 +114,6 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         }
     }
 
-
     fun showExpiryNotification(
         context: Context,
         item: String,
@@ -147,17 +146,10 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         expiringItems.forEach { item ->
             // For each expiring item, get recipe suggestions
             getRecipesForIngredient(item.name) { recipes ->
-                // Once recipes are fetched, show the notification
-                showExpiryNotification(context, item.name, recipes)
+                showExpiryNotification(context, item.name, recipes)  // Once recipes are fetched, show the notification
             }
         }
     }
-
-//    fun removeFromShoppingList(item: ShoppingList) {
-//        _shoppingList.value = _shoppingList.value.filterNot {
-//            it.name == item.name && it.category == item.category && it.quantity == item.quantity
-//        }
-//    }
 
     fun removeFromShoppingList(item: ShoppingList) {
         viewModelScope.launch {
@@ -167,6 +159,19 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     fun removeFromPantryList(item: PantryItem) {
         viewModelScope.launch {
             smartPantryDao.deletePantryItem(item)  // remove from DB
+        }
+    }
+
+    fun addItemToPantryList(item: ShoppingList) {
+        viewModelScope.launch {
+            // Create a PantryItem object from ShoppingList
+            val pantryItem = PantryItem(
+                name = item.name,
+                quantity = item.quantity,
+                category = item.category,
+                date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()) // Use current date
+            )
+            smartPantryDao.insertPantryItem(pantryItem) // Add to pantry list in DB
         }
     }
 
