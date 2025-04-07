@@ -8,6 +8,7 @@ import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -53,8 +56,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -75,18 +80,248 @@ import java.util.Calendar
 //define app navigation
 @Composable
 fun AppNavigation() {
-    //retrieve navController
     val navController = rememberNavController()
-    //set navHost and the routes
-    NavHost(navController, startDestination = "home") {
+
+    NavHost(navController, startDestination = "launcher") {
+        composable("launcher") { LauncherScreen(navController) }
+        composable("login") { LoginScreen(navController) }
+        composable("registration") { RegistrationScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("pantry") { PantryList(navController) }
         composable("shopping list") { ShoppingList(navController) }
         composable("add to shopping list") { AddShoppingList(navController) }
         composable("add to pantry list") { AddPantryList(navController) }
-
     }
 }
+
+
+@Composable
+fun LauncherScreen(navController: NavController, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    val context = LocalContext.current
+    val isLoggedIn by smartPantryViewModel.isLoggedIn.collectAsState(initial = false)
+
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            navController.navigate("home") {
+                popUpTo("launcher") { inclusive = true }
+            }
+        } else {
+            navController.navigate("login") {
+                popUpTo("launcher") { inclusive = true }
+            }
+        }
+    }
+
+    // Optional UI if you want a splash screen
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF808000)),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+
+@Composable
+fun RegistrationScreen(navController: NavController, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize()
+            .background(Color(0xFF808000)),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // Username TextField
+        TextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Email TextField
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Phone TextField
+        TextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Phone Number") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Date of Birth TextField
+        TextField(
+            value = dob,
+            onValueChange = { dob = it },
+            label = { Text("Date of Birth (YYYY-MM-DD)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password TextField
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Confirm Password TextField
+        TextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirm Password") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Register Button
+        Button(
+            onClick = {
+                if (username.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && dob.isNotBlank() && password == confirmPassword) {
+                    smartPantryViewModel.register(username, email, phone, dob, password) {
+                        smartPantryViewModel.saveUserLogin(username) // Save login
+                        Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                        navController.navigate("home") {
+                            popUpTo("registration") { inclusive = true }
+                        }
+                    }
+
+                } else {
+                    Toast.makeText(context, "Please fill in all fields and make sure passwords match", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Register")
+        }
+    }
+}
+
+
+@Composable
+fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    // Replace this with your app logo resource or drawable
+    val appLogo = painterResource(id = R.drawable.app_logo) // Make sure you have a logo in your resources
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize() // Make sure this fills the entire screen
+            .background(Color(0xFF808000)), // Set the background color to #808000 (Olive Green)
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // Welcome Label
+        Text(
+            text = "Welcome to Smart Pantry",
+            style = TextStyle(
+                fontSize = 32.sp, // You can adjust the font size
+                fontWeight = FontWeight.Bold, // Make it bold
+                color = Color.DarkGray // Set the text color
+            ),
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        // App Logo
+        Image(
+            painter = appLogo,
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(200.dp) // Adjust the size as needed
+                .clip(RoundedCornerShape(16.dp)) // Apply rounded corners to the image
+                .padding(bottom = 32.dp) // Space between the logo and the text fields
+        )
+
+        // Username TextField
+        TextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password TextField
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Login Button
+        Button(
+            onClick = {
+                if (username.isNotBlank() && password.isNotBlank()) {
+                    smartPantryViewModel.login(username, password) {
+                        smartPantryViewModel.saveUserLogin(username) // Save login
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, "Please enter both username and password", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Login")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Navigate to registration screen
+        TextButton(onClick = { navController.navigate("registration") }) {
+            Text("Don't have an account? Register here.")
+        }
+    }
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,15 +551,22 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
 @Composable
 fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val context = LocalContext.current
-    var itemName by remember { mutableStateOf("") }
-    var quantity by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
+    val autofillItem by smartPantryViewModel.autofillItem.collectAsState()
+
+    var itemName by remember { mutableStateOf(autofillItem?.name ?: "") }
+    var quantity by remember { mutableStateOf(autofillItem?.quantity ?: "") }
+    var category by remember { mutableStateOf(autofillItem?.category ?: "") }
+//    var itemName by remember { mutableStateOf("") }
+//    var quantity by remember { mutableStateOf("") }
+//    var category by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
 
     val calendar = Calendar.getInstance()
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    smartPantryViewModel.clearAutofill()
 
     // DatePickerDialog setup
     val datePickerDialog = DatePickerDialog(
@@ -357,7 +599,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -372,7 +615,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -388,7 +632,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -415,7 +660,8 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                         disabledTrailingIconColor = Color.Black,
                         disabledLeadingIconColor = Color.Black,
                         disabledPlaceholderColor = Color.DarkGray,
-                        containerColor = Color(0xFFF5F5DC)
+                        containerColor = Color(0xFFF5F5DC),
+                        unfocusedTextColor = Color.Black
                     )
                 )
             }
@@ -427,13 +673,13 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
                 onClick = {
                     // Date validation
                     if (date.isNotEmpty()) {
-                        val item = PantryItem(
+                        val newItem = PantryItem(
                             name = itemName,
                             category = category,
                             quantity = quantity,
                             date = date
                         )
-                        smartPantryViewModel.addItemPantryList(item)
+                        smartPantryViewModel.addItemPantryList(newItem)
                         val marimbaSong = MediaPlayer.create(context, R.raw.marimba)
                         marimbaSong.start()
                         Toast.makeText(
@@ -464,11 +710,15 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 }
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
+fun ShoppingList(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    smartPantryViewModel: SmartPantryViewModel = viewModel()
+) {
     val shoppingList by smartPantryViewModel.shoppingList.collectAsState(initial = emptyList())
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -493,47 +743,67 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // Display list items
+            // Display list items grouped by category
             LazyColumn(
                 modifier = Modifier.weight(1f)
             ) {
-                items(shoppingList) { item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "${item.name} - ${item.quantity} ${item.category}",
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = {
-                            smartPantryViewModel.addItemToPantryList(item) // Move item to pantry
-                            smartPantryViewModel.removeFromShoppingList(item) // Remove item from shopping list
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Move to pantry",
-                                tint = Color.Green
-                            )
-                        }
+                val groupedItems = shoppingList.groupBy { it.category }
 
-                        //Delete button
-                        IconButton(
-                            onClick = {
-                                smartPantryViewModel.removeFromShoppingList(item)
-                            }
+                groupedItems.forEach { (category, itemsInCategory) ->
+                    // Category header
+                    item {
+                        Text(
+                            text = category,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            color = Color.Black
+                        )
+                    }
+
+                    // Items under the category
+                    items(itemsInCategory) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete item",
-                                tint = Color.Red
+                            Text(
+                                text = "${item.name} - ${item.quantity}",
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFF7A4A09)
                             )
+
+                            // Move to pantry
+                            IconButton(onClick = {
+                                smartPantryViewModel.setItemToAutofill(item)
+                                smartPantryViewModel.removeFromShoppingList(item)
+                                navController.navigate("add to pantry list")
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Move to pantry",
+                                    tint = Color.Black
+                                )
+                            }
+
+                            // Delete
+                            IconButton(
+                                onClick = {
+                                    smartPantryViewModel.removeFromShoppingList(item)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete item",
+                                    tint = Color.Red
+                                )
+                            }
                         }
                     }
                 }
@@ -543,7 +813,7 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
 
             // Add button at the bottom
             Button(
-                onClick = { navController.navigate("add to shopping list")},
+                onClick = { navController.navigate("add to shopping list") },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -586,7 +856,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -601,7 +872,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-//                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -617,7 +889,8 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFFF5F5DC),
-                    focusedTextColor =  Color.Black
+                    focusedTextColor =  Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -628,7 +901,7 @@ fun AddShoppingList(navController: NavController, modifier: Modifier = Modifier,
                 onClick = {
                     val item = ShoppingList(name = itemName, category = category, quantity = quantity)
                     smartPantryViewModel.addItemShoppingList(item)
-                    val song = MediaPlayer.create(context, R.raw.merengue) // Rename to `song` for consistency
+                    val song = MediaPlayer.create(context, R.raw.merengue)
                     song.start()
                     Toast.makeText(
                         navController.context,
@@ -656,122 +929,3 @@ fun ScreenPreview() {
         AppNavigation()
         }
     }
-
-
-
-//@Composable
-//fun EditPantryItemScreen(
-//    itemId: Int,
-//    navController: NavController,
-//    smartPantryViewModel: SmartPantryViewModel = viewModel()
-//) {
-//    val pantryItems by smartPantryViewModel.pantryList.collectAsState()
-//    val item = pantryItems.find { it.id == itemId }
-//
-//    // Initialize state variables
-//    var name by remember { mutableStateOf(item?.name.orEmpty()) }
-//    var quantity by remember { mutableStateOf(item?.quantity?.toString().orEmpty()) }
-//    var date by remember { mutableStateOf(item?.date.orEmpty()) }
-//    var category by remember { mutableStateOf(item?.category.orEmpty()) }
-//
-//    if (item == null) {
-//        Text("Item not found")
-//        return
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp),
-//        verticalArrangement = Arrangement.spacedBy(12.dp)
-//    ) {
-//        Text(text = "Edit Pantry Item", style = MaterialTheme.typography.titleLarge)
-//
-//        OutlinedTextField(
-//            value = name,
-//            onValueChange = { name = it },
-//            label = { Text("Item Name") },
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//
-//        OutlinedTextField(
-//            value = quantity,
-//            onValueChange = {
-//                // Update quantity only if the input is a valid number
-//                if (it.isEmpty() || it.toIntOrNull() != null) {
-//                    quantity = it
-//                }
-//            },
-//            label = { Text("Quantity") },
-//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//
-//        OutlinedTextField(
-//            value = date,
-//            onValueChange = { date = it },
-//            label = { Text("Expiration Date (dd/MM/yyyy)") },
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//
-//        OutlinedTextField(
-//            value = category,
-//            onValueChange = { category = it },
-//            label = { Text("Category") },
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//
-//        Button(
-//            onClick = {
-//                smartPantryViewModel.updatePantryItem(
-//                    PantryItem(id = itemId, name = name, quantity = quantity.toString(), date = date, category = category)
-//                )
-//                navController.popBackStack()
-//            },
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            Text("Save Changes")
-//        }
-//    }
-//}
-//
-//
-//@Composable
-//fun PantryItemRow(
-//    item: PantryItem,
-//    onEdit: () -> Unit,
-//    onDelete: () -> Unit,
-//    onAddToShoppingList: () -> Unit
-//) {
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 4.dp),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-//    ) {
-//        Column(
-//            modifier = Modifier.padding(16.dp)
-//        ) {
-//            Text(
-//                text = "${item.name} - Qty: ${item.quantity} - Date: ${item.date}",
-//                style = MaterialTheme.typography.bodyMedium
-//            )
-//            Row(
-//                horizontalArrangement = Arrangement.End,
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                IconButton(onClick = onEdit) {
-//                    Icon(Icons.Default.Edit, contentDescription = "Edit Item")
-//                }
-//                IconButton(onClick = onDelete) {
-//                    Icon(Icons.Default.Delete, contentDescription = "Delete Item")
-//                }
-//                IconButton(onClick = onAddToShoppingList) {
-//                    Icon(Icons.Default.ShoppingCart, contentDescription = "Add to Shopping List")
-//                }
-//            }
-//        }
-//    }
-//}
-
-

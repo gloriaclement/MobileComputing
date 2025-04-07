@@ -11,14 +11,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gclem19.smartpantry.MainActivity
 import com.gclem19.smartpantry.data.PantryItem
+import com.gclem19.smartpantry.data.PreferencesManager
 import com.gclem19.smartpantry.data.ShoppingList
 import com.gclem19.smartpantry.data.SmartPantryDB
 import com.gclem19.smartpantry.data.SmartPantryDao
 import com.gclem19.smartpantry.network.RetrofitInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -38,6 +41,24 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     private val _recipesForExpiringItems = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val recipesForExpiringItems = _recipesForExpiringItems.asStateFlow()
 
+    private val _autofillItem = MutableStateFlow<ShoppingList?>(null)
+    val autofillItem = _autofillItem.asStateFlow()
+
+    private val _itemToAutofill = MutableStateFlow<ShoppingList?>(null)
+//    val itemToAutofill: StateFlow<ShoppingList?> = _itemToAutofill
+
+    private val preferencesManager = PreferencesManager(application)
+    // Expose data from PreferencesManager
+    // Expose registration data
+    val username = preferencesManager.username
+    val email = preferencesManager.email
+    val phone = preferencesManager.phone
+    val dob = preferencesManager.dob
+    val isLoggedIn = preferencesManager.isLoggedIn.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        false
+    )
 
 
     // Initialize the pantry items
@@ -140,16 +161,15 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     }
     fun checkAndNotifyExpiringItems(context: Context) {
         val expiringItems = getExpiringItems()
+        fetchRecipeSuggestionsForExpiringItems(expiringItems) // Fetch recipes for expiring items
 
-        fetchRecipeSuggestionsForExpiringItems(expiringItems)
-
+        // Notify about each expiring item
         expiringItems.forEach { item ->
-            // For each expiring item, get recipe suggestions
-            getRecipesForIngredient(item.name) { recipes ->
-                showExpiryNotification(context, item.name, recipes)  // Once recipes are fetched, show the notification
-            }
+            val recipes = _recipesForExpiringItems.value[item.name] ?: emptyList()
+            showExpiryNotification(context, item.name, recipes)
         }
     }
+
 
     fun removeFromShoppingList(item: ShoppingList) {
         viewModelScope.launch {
@@ -175,7 +195,47 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         }
     }
 
+    fun setItemToAutofill(item: ShoppingList) {
+        _autofillItem.value = item
+    }
+
+    fun clearAutofill() {
+        _itemToAutofill.value = null
+    }
+
+    // Register method
+    // Register user in DataStore
+    fun register(username: String, email: String, phone: String, dob: String, password: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            preferencesManager.register(username, email, phone, dob, password)
+            onSuccess() // Notify on success
+        }
+    }
+
+    // Logout method
+    fun logout(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            preferencesManager.logout()
+            onSuccess()
+        }
+    }
+
+    // Login method (You can add logic to check if the username is valid or check if the user is already logged in)
+    fun login(username: String, password: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            preferencesManager.setUserLoggedIn(true)
+            onSuccess() // Notify on success
+        }
+    }
+
+    fun saveUserLogin(username: String) {
+        viewModelScope.launch {
+            preferencesManager.loginUser(username)
+        }
+    }
 }
+
+
 
 //    fun insert(user: User) = viewModelScope.launch {
 //        smartPantryDao.insert(user)

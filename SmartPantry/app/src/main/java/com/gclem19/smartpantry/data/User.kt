@@ -12,6 +12,7 @@ data class ShoppingList(
     val name: String,
     val category: String,
     val quantity: String,
+
 )
 
 @Entity(tableName = "pantry_list")
