@@ -220,10 +220,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantryList(
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    smartPantryViewModel: SmartPantryViewModel = viewModel()
+fun PantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()
 ) {
     val pantryList by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
 
@@ -271,10 +268,28 @@ fun PantryList(
                         )
                     }
                     items(items) { item ->
-                        Text(
-                            text = "${item.name} - Qty: ${item.quantity} - Date: ${item.date}",
-                            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "${item.name} - Qty: ${item.quantity} - Date: ${item.date}",
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(onClick = {
+                                smartPantryViewModel.removeFromPantryList(item)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete item",
+                                    tint = Color.Red
+                                )
+                            }
+                        }
                     }
                 }
             }

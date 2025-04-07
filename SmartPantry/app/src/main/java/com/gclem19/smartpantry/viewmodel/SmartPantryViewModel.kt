@@ -164,6 +164,11 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
             smartPantryDao.deleteShoppingItem(item)  // remove from DB
         }
     }
+    fun removeFromPantryList(item: PantryItem) {
+        viewModelScope.launch {
+            smartPantryDao.deletePantryItem(item)  // remove from DB
+        }
+    }
 
 }
 
