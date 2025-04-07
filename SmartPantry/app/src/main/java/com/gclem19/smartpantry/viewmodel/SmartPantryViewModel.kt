@@ -38,6 +38,8 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
     private val _recipesForExpiringItems = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val recipesForExpiringItems = _recipesForExpiringItems.asStateFlow()
 
+
+
     // Initialize the pantry items
     init {
         viewModelScope.launch {
@@ -127,7 +129,7 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
         val recipeSuggestions = recipes.joinToString("\n")
 
         val notification = NotificationCompat.Builder(context, "expiry_channel")
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
             .setContentTitle("Expiring Soon: $item")
             .setStyle(NotificationCompat.BigTextStyle().bigText("Recipes:\n$recipeSuggestions"))
             .setContentIntent(pendingIntent)
@@ -148,6 +150,18 @@ class SmartPantryViewModel(application: Application): AndroidViewModel(applicati
                 // Once recipes are fetched, show the notification
                 showExpiryNotification(context, item.name, recipes)
             }
+        }
+    }
+
+//    fun removeFromShoppingList(item: ShoppingList) {
+//        _shoppingList.value = _shoppingList.value.filterNot {
+//            it.name == item.name && it.category == item.category && it.quantity == item.quantity
+//        }
+//    }
+
+    fun removeFromShoppingList(item: ShoppingList) {
+        viewModelScope.launch {
+            smartPantryDao.deleteShoppingItem(item)  // remove from DB
         }
     }
 

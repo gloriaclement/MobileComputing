@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,12 +22,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-//import androidx.compose.material3.Card
-//import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -49,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +83,7 @@ fun AppNavigation() {
         composable("shopping list") { ShoppingList(navController) }
         composable("add to shopping list") { AddShoppingList(navController) }
         composable("add to pantry list") { AddPantryList(navController) }
+
     }
 }
 
@@ -89,7 +96,6 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val expiringItems = smartPantryViewModel.getExpiringItems()
-    val recipesForExpiringItems by smartPantryViewModel.recipesForExpiringItems.collectAsState()
     val recipeMap by smartPantryViewModel.recipesForExpiringItems.collectAsState()
 
     // Trigger notification for expiring items when HomeScreen is launched
@@ -101,136 +107,128 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Box(
+                    Text(
+                        text = "Home Pantry",
+                        color = Color(0xFFD2B48C),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Home Pantry",
-                            color = Color(0xFFD2B48C),
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
+                        textAlign = TextAlign.Center
+                    )
                 }
             )
         }
     ) { padding ->
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding),
-            contentAlignment = Alignment.TopCenter
+                .padding(padding)
+                .verticalScroll(rememberScrollState()) // Enable scrolling
+                .padding(16.dp), // Optional padding for content
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(top = 16.dp)
-            ) {
-                // Expiry Notification Section
-                if (expiringItems.isNotEmpty()) {
-                    Text(
-                        text = "Expiring Soon:",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Bold
+            // Expiry Notification Section
+            if (expiringItems.isNotEmpty()) {
+                Text(
+                    text = "Expiring Soon:",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                expiringItems.forEach { item ->
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = "${item.name} - ${item.date}",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.bodyMedium
                         )
-                    )
-                    expiringItems.forEach { item ->
-                        Column(horizontalAlignment = Alignment.Start) {
-                            Text(
-                                text = "${item.name} - ${item.date}",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                            )
 
-                            val recipes = recipeMap[item.name]
-                            if (!recipes.isNullOrEmpty()) {
+                        val recipes = recipeMap[item.name]
+                        if (!recipes.isNullOrEmpty()) {
+                            Text(
+                                text = "Suggested Recipes:",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF006400),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            recipes.take(5).forEach { recipe ->
                                 Text(
-                                    text = "Suggested Recipes:",
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF006400),
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
-                                recipes.take(5).forEach { recipe ->
-                                    Text(
-                                        text = "- $recipe",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color.DarkGray,
-                                        modifier = Modifier.padding(start = 8.dp)
-                                    )
-                                }
-                            } else {
-                                Text(
-                                    text = "Fetching recipes...",
+                                    text = "- $recipe",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray,
+                                    color = Color.DarkGray,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
+                        } else {
+                            Text(
+                                text = "Fetching recipes...",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
                         }
                     }
-                } else {
-                    Text(
-                        text = "No items expiring soon.",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
                 }
-
-                // Pantry List Image Button
-                Image(
-                    painter = painterResource(id = R.drawable.pantry_list),
-                    contentDescription = "Pantry List",
-                    modifier = Modifier
-                        .size(150.dp)
-                        .border(3.dp, Color(0xFF006400))
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable {
-                            Toast
-                                .makeText(context, "Pantry List!", Toast.LENGTH_SHORT)
-                                .show()
-                            navController.navigate("pantry")
-                        }
-                )
-
-                // Shopping List Image Button
-                Image(
-                    painter = painterResource(id = R.drawable.shopping_list),
-                    contentDescription = "Shopping List",
-                    modifier = Modifier
-                        .size(150.dp)
-                        .border(3.dp, Color(0xFF006400))
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable {
-                            Toast
-                                .makeText(context, "Shopping List!", Toast.LENGTH_SHORT)
-                                .show()
-                            navController.navigate("shopping list")
-                        }
+            } else {
+                Text(
+                    text = "No items expiring soon.",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
+
+            // Pantry List Image Button
+            Image(
+                painter = painterResource(id = R.drawable.pantry_list),
+                contentDescription = "Pantry List",
+                modifier = Modifier
+                    .size(150.dp)
+                    .border(3.dp, Color(0xFF006400), RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable {
+                        Toast
+                            .makeText(context, "Pantry List!", Toast.LENGTH_SHORT)
+                            .show()
+                        navController.navigate("pantry")
+                    }
+            )
+
+            // Shopping List Image Button
+            Image(
+                painter = painterResource(id = R.drawable.shopping_list),
+                contentDescription = "Shopping List",
+                modifier = Modifier
+                    .size(150.dp)
+                    .border(3.dp, Color(0xFF006400), RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable {
+                        Toast
+                            .makeText(context, "Shopping List!", Toast.LENGTH_SHORT)
+                            .show()
+                        navController.navigate("shopping list")
+                    }
+            )
         }
     }
 }
 
 
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantryList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
-    val pantryItem by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
+fun PantryList(
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    smartPantryViewModel: SmartPantryViewModel = viewModel()
+) {
+    val pantryList by smartPantryViewModel.pantryList.collectAsState(initial = emptyList())
 
     // Group items by category
-    val groupedItems = pantryItem.groupBy { it.category }
+    val groupedItems = pantryList.groupBy { it.category }
 
     Scaffold(
         topBar = {
@@ -256,6 +254,7 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             LazyColumn(
@@ -288,7 +287,8 @@ fun PantryList(navController: NavController, modifier: Modifier = Modifier, smar
             ) {
                 Text(
                     text = "Add",
-                    color = Color(0xFFD2B48C)
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -448,6 +448,7 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 }
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
@@ -476,17 +477,38 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             // Display list items
             LazyColumn(
-                modifier = Modifier.weight(1f) // Takes available space, pushing the button down
+                modifier = Modifier.weight(1f)
             ) {
                 items(shoppingList) { item ->
-                    Text(
-                        text = "${item.name} - ${item.quantity} ${item.category}",
-                        modifier = Modifier.padding(8.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${item.name} - ${item.quantity} ${item.category}",
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        IconButton(
+                            onClick = {
+                                smartPantryViewModel.removeFromShoppingList(item)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete item",
+                                tint = Color.Red
+                            )
+                        }
+                    }
                 }
             }
 
@@ -494,7 +516,7 @@ fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, sm
 
             // Add button at the bottom
             Button(
-                onClick = { navController.navigate("Add to shopping list") },
+                onClick = { navController.navigate("add to shopping list")},
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -607,5 +629,122 @@ fun ScreenPreview() {
         AppNavigation()
         }
     }
+
+
+
+//@Composable
+//fun EditPantryItemScreen(
+//    itemId: Int,
+//    navController: NavController,
+//    smartPantryViewModel: SmartPantryViewModel = viewModel()
+//) {
+//    val pantryItems by smartPantryViewModel.pantryList.collectAsState()
+//    val item = pantryItems.find { it.id == itemId }
+//
+//    // Initialize state variables
+//    var name by remember { mutableStateOf(item?.name.orEmpty()) }
+//    var quantity by remember { mutableStateOf(item?.quantity?.toString().orEmpty()) }
+//    var date by remember { mutableStateOf(item?.date.orEmpty()) }
+//    var category by remember { mutableStateOf(item?.category.orEmpty()) }
+//
+//    if (item == null) {
+//        Text("Item not found")
+//        return
+//    }
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp),
+//        verticalArrangement = Arrangement.spacedBy(12.dp)
+//    ) {
+//        Text(text = "Edit Pantry Item", style = MaterialTheme.typography.titleLarge)
+//
+//        OutlinedTextField(
+//            value = name,
+//            onValueChange = { name = it },
+//            label = { Text("Item Name") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(
+//            value = quantity,
+//            onValueChange = {
+//                // Update quantity only if the input is a valid number
+//                if (it.isEmpty() || it.toIntOrNull() != null) {
+//                    quantity = it
+//                }
+//            },
+//            label = { Text("Quantity") },
+//            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(
+//            value = date,
+//            onValueChange = { date = it },
+//            label = { Text("Expiration Date (dd/MM/yyyy)") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        OutlinedTextField(
+//            value = category,
+//            onValueChange = { category = it },
+//            label = { Text("Category") },
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//
+//        Button(
+//            onClick = {
+//                smartPantryViewModel.updatePantryItem(
+//                    PantryItem(id = itemId, name = name, quantity = quantity.toString(), date = date, category = category)
+//                )
+//                navController.popBackStack()
+//            },
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            Text("Save Changes")
+//        }
+//    }
+//}
+//
+//
+//@Composable
+//fun PantryItemRow(
+//    item: PantryItem,
+//    onEdit: () -> Unit,
+//    onDelete: () -> Unit,
+//    onAddToShoppingList: () -> Unit
+//) {
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 4.dp),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+//    ) {
+//        Column(
+//            modifier = Modifier.padding(16.dp)
+//        ) {
+//            Text(
+//                text = "${item.name} - Qty: ${item.quantity} - Date: ${item.date}",
+//                style = MaterialTheme.typography.bodyMedium
+//            )
+//            Row(
+//                horizontalArrangement = Arrangement.End,
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                IconButton(onClick = onEdit) {
+//                    Icon(Icons.Default.Edit, contentDescription = "Edit Item")
+//                }
+//                IconButton(onClick = onDelete) {
+//                    Icon(Icons.Default.Delete, contentDescription = "Delete Item")
+//                }
+//                IconButton(onClick = onAddToShoppingList) {
+//                    Icon(Icons.Default.ShoppingCart, contentDescription = "Add to Shopping List")
+//                }
+//            }
+//        }
+//    }
+//}
 
 

@@ -1,9 +1,11 @@
 package com.gclem19.smartpantry.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,6 +32,14 @@ interface SmartPantryDao {
     @Query("SELECT * FROM pantry_list ORDER BY id DESC")
     fun getAllPantryItems(): Flow<List<PantryItem>>
 
+    @Delete
+    suspend fun deletePantryItem(item: PantryItem)
+
+    @Update
+    suspend fun updatePantryItem(item: PantryItem)
+
+    @Delete
+    suspend fun deleteShoppingItem(item: ShoppingList)
 
 
 //    // Insert a user
