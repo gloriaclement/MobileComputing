@@ -129,6 +129,8 @@ fun LauncherScreen(navController: NavController, smartPantryViewModel: SmartPant
 }
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(navController: NavController, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     var username by remember { mutableStateOf("") }
@@ -139,21 +141,48 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
 
+    val appRegLogo = painterResource(id = R.drawable.app_logo)
+
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
             .background(Color(0xFF808000)),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Reg Label
+        Text(
+            text = "Register for Smart Pantry",
+            style = TextStyle(
+                fontSize = 32.sp, // You can adjust the font size
+                fontWeight = FontWeight.Bold, // Make it bold
+                color = Color.DarkGray // Set the text color
+            ),
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        // RegLogo
+        Image(
+            painter = appRegLogo,
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(200.dp) // Adjust the size as needed
+                .clip(RoundedCornerShape(16.dp)) // Apply rounded corners to the image
+                .padding(bottom = 32.dp) // Space between the logo and the text fields
+        )
+
         // Username TextField
         TextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -163,7 +192,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -174,7 +208,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
             onValueChange = { phone = it },
             label = { Text("Phone Number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -185,7 +224,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
             onValueChange = { dob = it },
             label = { Text("Date of Birth (YYYY-MM-DD)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -197,7 +241,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
             label = { Text("Password") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -209,7 +258,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
             label = { Text("Confirm Password") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -230,7 +284,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                     Toast.makeText(context, "Please fill in all fields and make sure passwords match", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
         ) {
             Text("Register")
         }
@@ -239,6 +295,8 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
 }
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     var username by remember { mutableStateOf("") }
@@ -283,7 +341,12 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -295,7 +358,12 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color.White
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -319,7 +387,9 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
                     Toast.makeText(context, "Please enter both username and password", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
         ) {
             Text("Login")
         }
@@ -334,8 +404,6 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
         }
     }
 }
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
