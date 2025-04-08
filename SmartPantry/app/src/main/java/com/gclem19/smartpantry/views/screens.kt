@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,14 +95,18 @@ fun AppNavigation() {
     }
 }
 
-
 @Composable
 fun LauncherScreen(navController: NavController, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
     val context = LocalContext.current
     val isLoggedIn by smartPantryViewModel.isLoggedIn.collectAsState(initial = false)
+    val isUserRegistered by smartPantryViewModel.isUserRegistered.collectAsState(initial = false)
 
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
+    LaunchedEffect(isUserRegistered, isLoggedIn) {
+        if (!isUserRegistered) {
+            navController.navigate("registration") {
+                popUpTo("launcher") { inclusive = true }
+            }
+        } else if (isLoggedIn) {
             navController.navigate("home") {
                 popUpTo("launcher") { inclusive = true }
             }
@@ -209,12 +214,12 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Register Button
         Button(
             onClick = {
-                if (username.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && dob.isNotBlank() && password == confirmPassword) {
+                if (username.isNotBlank() && email.isNotBlank() && phone.isNotBlank() &&
+                    dob.isNotBlank() && password == confirmPassword) {
+
                     smartPantryViewModel.register(username, email, phone, dob, password) {
-                        smartPantryViewModel.saveUserLogin(username) // Save login
                         Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
                         navController.navigate("home") {
                             popUpTo("registration") { inclusive = true }
@@ -229,6 +234,7 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
         ) {
             Text("Register")
         }
+
     }
 }
 
@@ -238,6 +244,7 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
+
 
     // Replace this with your app logo resource or drawable
     val appLogo = painterResource(id = R.drawable.app_logo) // Make sure you have a logo in your resources
@@ -293,16 +300,21 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Login Button
+// Login Button
         Button(
             onClick = {
                 if (username.isNotBlank() && password.isNotBlank()) {
-                    smartPantryViewModel.login(username, password) {
-                        smartPantryViewModel.saveUserLogin(username) // Save login
-                        navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
+                    println("Attempting login with Username: $username and Password: $password") // Add this for debugging
+                    smartPantryViewModel.login(username, password,
+                        onSuccess = {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        },
+                        onError = {
+                            Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
                         }
-                    }
+                    )
                 } else {
                     Toast.makeText(context, "Please enter both username and password", Toast.LENGTH_SHORT).show()
                 }
@@ -311,6 +323,8 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
         ) {
             Text("Login")
         }
+
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -352,6 +366,23 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
+                },
+                actions = {
+                    // Add a logout button in the top app bar
+                    IconButton(onClick = {
+                        // Trigger logout and navigate to login screen
+                        smartPantryViewModel.logout {
+                            navController.navigate("login") {
+                                // Ensure the back stack is cleared so the user can't go back to the home screen
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp,
+                            contentDescription = "Logout"
+                        )
+                    }
                 }
             )
         }

@@ -6,16 +6,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 // Extension property to get the DataStore instance
 val Context.dataStore by preferencesDataStore(name = "user_preferences")
 
+
 class PreferencesManager(context: Context) {
 
     private val dataStore = context.dataStore
 
-    // Keys
+
+    // Preference Keys
     private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     private val USERNAME = stringPreferencesKey("username")
     private val EMAIL = stringPreferencesKey("email")
@@ -28,10 +31,15 @@ class PreferencesManager(context: Context) {
     val email: Flow<String?> = dataStore.data.map { it[EMAIL] }
     val phone: Flow<String?> = dataStore.data.map { it[PHONE] }
     val dob: Flow<String?> = dataStore.data.map { it[DOB] }
-    val password: Flow<String?> = dataStore.data.map { it[PASSWORD] }
     val isLoggedIn: Flow<Boolean> = dataStore.data.map { it[IS_LOGGED_IN] ?: false }
 
-    // Register and auto-login
+    // Check if user is registered
+    fun isUserRegistered(): Flow<Boolean> =
+        dataStore.data.map { prefs ->
+            prefs[USERNAME] != null && prefs[PASSWORD] != null
+        }
+
+    // Register (does NOT auto-login for better logic)
     suspend fun register(
         username: String,
         email: String,
@@ -39,40 +47,42 @@ class PreferencesManager(context: Context) {
         dob: String,
         password: String
     ) {
-        dataStore.edit { preferences ->
-            preferences[USERNAME] = username
-            preferences[EMAIL] = email
-            preferences[PHONE] = phone
-            preferences[DOB] = dob
-            preferences[PASSWORD] = password
-            preferences[IS_LOGGED_IN] = true
+        dataStore.edit { prefs ->
+            prefs[USERNAME] = username
+            prefs[EMAIL] = email
+            prefs[PHONE] = phone
+            prefs[DOB] = dob
+            prefs[PASSWORD] = password
+            prefs[IS_LOGGED_IN] = false // Set false until login
+        }
+        println("Registered Username: $username, Password: $password") // For debugging
+    }
+
+    // Login with validation
+    suspend fun login(username: String, password: String): Boolean {
+        val prefs = dataStore.data.first() // Fetch the data from DataStore
+        val savedUsername = prefs[USERNAME] // Get the saved username
+        val savedPassword = prefs[PASSWORD] // Get the saved password
+
+        println("Retrieved Username: $savedUsername, Retrieved Password: $savedPassword") // For debugging
+
+        return if (username == savedUsername && password == savedPassword) {
+            dataStore.edit { it[IS_LOGGED_IN] = true }
+            true
+        } else {
+            false
         }
     }
 
-    // Login
-    suspend fun loginUser(username: String) {
-        dataStore.edit { preferences ->
-            preferences[USERNAME] = username
-            preferences[IS_LOGGED_IN] = true
-        }
-    }
-
-    // Manual login status update
+    // Manual login state setter (optional)
     suspend fun setUserLoggedIn(loggedIn: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[IS_LOGGED_IN] = loggedIn
-        }
+        dataStore.edit { it[IS_LOGGED_IN] = loggedIn }
     }
 
-    // Logout and clear data
+    // Logout
     suspend fun logout() {
-        dataStore.edit { preferences ->
-            preferences[IS_LOGGED_IN] = false
-            preferences.remove(USERNAME)
-            preferences.remove(EMAIL)
-            preferences.remove(PHONE)
-            preferences.remove(DOB)
-            preferences.remove(PASSWORD)
+        dataStore.edit { prefs ->
+            prefs[IS_LOGGED_IN] = false
         }
     }
 }
