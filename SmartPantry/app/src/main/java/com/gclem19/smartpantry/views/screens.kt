@@ -97,7 +97,7 @@ fun AppNavigation() {
 
 @Composable
 fun LauncherScreen(navController: NavController, smartPantryViewModel: SmartPantryViewModel = viewModel()) {
-    val context = LocalContext.current
+
     val isLoggedIn by smartPantryViewModel.isLoggedIn.collectAsState(initial = false)
     val isUserRegistered by smartPantryViewModel.isUserRegistered.collectAsState(initial = false)
 
@@ -181,7 +181,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -196,7 +198,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -212,7 +216,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -228,7 +234,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -245,7 +253,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -262,7 +272,9 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -293,7 +305,6 @@ fun RegistrationScreen(navController: NavController, smartPantryViewModel: Smart
 
     }
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -345,7 +356,9 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -362,7 +375,9 @@ fun LoginScreen(navController: NavController, modifier: Modifier = Modifier, sma
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = TextFieldDefaults.textFieldColors(
-                containerColor = Color.White
+                containerColor = Color.White,
+                focusedTextColor =  Color.Black,
+                unfocusedTextColor = Color.Black
             )
         )
 
@@ -811,10 +826,7 @@ fun AddPantryList(navController: NavController, modifier: Modifier = Modifier, s
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingList(
-    navController: NavController,
-    modifier: Modifier = Modifier,
-    smartPantryViewModel: SmartPantryViewModel = viewModel()
+fun ShoppingList(navController: NavController, modifier: Modifier = Modifier, smartPantryViewModel: SmartPantryViewModel = viewModel()
 ) {
     val shoppingList by smartPantryViewModel.shoppingList.collectAsState(initial = emptyList())
 
